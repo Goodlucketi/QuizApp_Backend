@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const PORT = 3000
 const connectDb = require('./dbConfig')
 
@@ -46,7 +46,9 @@ app.post('/auth/signup', async (req, res)=>{
 
 })
 
-app.post('/auth/addquiz', async (req, res)=>{
+
+// Admin Add Quiz
+app.post('/admin/addquiz', async (req, res)=>{
     const quizData = req.body
     if(!quizData){
         console.log("Data not received");
@@ -71,6 +73,7 @@ app.post('/auth/addquiz', async (req, res)=>{
     }
 })
 
+// Login Authentication
 app.post('/auth/login', async (req, res)=>{
     const {player_username, player_password} = req.body
     
@@ -112,6 +115,23 @@ app.post('/auth/login', async (req, res)=>{
     }
     
 })
+
+// Fetch Quizes Based on Difficulty and Category
+app.get('/auth/quizzes', async (req, res) => {
+    const { category, difficulty } = req.query;
+
+    try {
+        const query = {};
+        if (category) query.category = category;
+        if (difficulty) query.difficulty = difficulty;
+
+        const quizzes = await db.collection('quiz').find(query).toArray();
+        res.status(200).json(quizzes);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch quizzes.' });
+    }
+});
+
 
 
 app.listen(PORT, ()=>{
